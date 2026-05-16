@@ -104,6 +104,20 @@ psql "$DATABASE_URL"
 psql "$DATABASE_URL" -c "\dt"
 ```
 
+## What Not to Touch
+
+- **`.env*` files** — never read, edit, commit, or suggest changes to any `.env`, `.env.local`, `.env.production`, or similar file. These hold secrets.
+- **Prod environment** — never run destructive SQL (`DROP`, `TRUNCATE`, `DELETE` without a `WHERE`) against `DATABASE_URL` without an explicit instruction and confirmation. The `prod` GitHub environment is the live database.
+- **Merged migration files** — once a `migrations/*.sql` file is merged to `main`, it is immutable. Do not edit it; create a new numbered file instead.
+
+## Migrations Summary
+
+Location: `migrations/` (note: **not** `db/migrations/`)
+
+| File | What it does |
+|---|---|
+| `0001_initial.sql` | Creates the four core tables: `person` (singleton profile), `employer` (companies), `role` (positions held, FK → employer), `activity_event` (append-only career event log with `kind`, `summary`, `payload JSONB`, `tags TEXT[]`). All tables use UUID PKs and `TIMESTAMPTZ` timestamps. `activity_event` deliberately has no `updated_at`/`deleted_at`. |
+
 ## Gotchas / Things to Avoid
 
 1. **No pooler URL** — always use the Neon direct connection string (without `-pooler` in the hostname) for `psql` and migrations.
